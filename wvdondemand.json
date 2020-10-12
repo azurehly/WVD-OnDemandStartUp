@@ -1,0 +1,195 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SubscriptionID": {
+      "type": "String",
+      "metadata": {
+        "description": "Enter the Subscirption ID."
+      }
+    },
+    "LogARG": {
+      "type": "String",
+      "metadata": {
+        "description": "Enter resource group name of Log Analytics."
+      }
+    },
+    "LogAName": {
+      "type": "String",
+      "metadata": {
+        "description": "Enter the name of Log Analytics."
+      }
+    },
+    "LogALocation": {
+      "type": "String",
+      "metadata": {
+        "description": "Location of Log Analytics."
+      }
+    },
+    "workflows_OnDemondStart_WVD_name": {
+      "defaultValue": "OnDemondStart-WVD",
+      "type": "String",
+      "metadata": {
+        "description": "Enter the Name of Logic App."
+      }
+    }
+  },
+  "variables": {
+    "monitorAPI": "[concat('/subscriptions/', parameters('SubscriptionID'), '/resourceGroups/', parameters('LogARG'), '/providers/Microsoft.Web/connections/azuremonitorlogs')]",
+    "VMAPI": "[concat('/subscriptions/', parameters('SubscriptionID'), '/resourceGroups/', parameters('LogARG'), '/providers/Microsoft.Web/connections/azurevm')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2017-07-01",
+      "name": "[parameters('workflows_OnDemondStart_WVD_name')]",
+      "location": "[parameters('LogALocation')]",
+      "properties": {
+        "state": "Enabled",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "Recurrence": {
+              "recurrence": {
+                "frequency": "Week",
+                "interval": 1,
+                "schedule": {
+                  "hours": [
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                    "6",
+                    "7",
+                    "8",
+                    "9",
+                    "10",
+                    "11",
+                    "12",
+                    "13",
+                    "14",
+                    "15",
+                    "16",
+                    "17",
+                    "18",
+                    "19",
+                    "20",
+                    "21",
+                    "22",
+                    "23"
+                  ],
+                  "minutes": [
+                    5,
+                    10,
+                    15,
+                    20,
+                    25,
+                    30,
+                    35,
+                    40,
+                    45,
+                    50,
+                    55,
+                    0
+                  ],
+                  "weekDays": [
+                    "Saturday",
+                    "Sunday",
+                    "Monday"
+                  ]
+                },
+                "timeZone": "AUS Eastern Standard Time"
+              },
+              "type": "Recurrence"
+            }
+          },
+          "actions": {
+            "For_each": {
+              "foreach": "@body('Run_query_and_list_results')?['value']",
+              "actions": {
+                "Compose": {
+                  "runAfter": {},
+                  "type": "Compose",
+                  "inputs": "Output:\nUser: @{items('For_each')?['User']}\nComputer: @{items('For_each')?['VMList']}\nResource Group: @{items('For_each')?['ResourceGroup']}"
+                },
+                "Start_virtual_machine": {
+                  "runAfter": {
+                    "Compose": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['azurevm']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/subscriptions/@{encodeURIComponent(parameters('SubscriptionID'))}/resourcegroups/@{encodeURIComponent(items('For_each')?['ResourceGroup'])}/providers/Microsoft.Compute/virtualMachines/@{encodeURIComponent(items('For_each')?['VMList'])}/start",
+                    "queries": {
+                      "api-version": "2019-12-01"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Run_query_and_list_results": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach"
+            },
+            "Run_query_and_list_results": {
+              "runAfter": {},
+              "type": "ApiConnection",
+              "inputs": {
+                "body": "WVDErrors\n| where TimeGenerated >= ago(5m)\n| where Type == \"WVDErrors\"\n| where Message contains \"Could not find any SessionHost available in specified pool\"\n| summarize arg_max(TimeGenerated, *) by UserName\n| extend CsvUsr = split(UserName, '@')\n| extend User = tostring(CsvUsr[0])\n| project User\n| join (VMProcess\n    | where Computer contains \"wvd\"\n    | where Computer contains \"t-\"\n    | summarize arg_max(TimeGenerated, *) by UserName\n    | project User=UserName, _ResourceId)\n    on User\n| extend CsvField = split(_ResourceId, '/')\n| extend VMList = tostring(CsvField[8])\n| extend ResourceGroup = tostring(CsvField[4])\n| project VMList, ResourceGroup, User",
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azuremonitorlogs']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/queryData",
+                "queries": {
+                  "resourcegroups": "[parameters('LogARG')]",
+                  "resourcename": "[parameters('LogAName')]",
+                  "resourcetype": "Log Analytics Workspace",
+                  "subscriptions": "[parameters('SubscriptionID')]",
+                  "timerange": "Set in query"
+                }
+              }
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "azuremonitorlogs": {
+                "connectionId": "[variables('monitorAPI')]",
+                "connectionName": "azuremonitorlogs",
+                "id": "[concat('/subscriptions/', parameters('SubscriptionID'), '/providers/Microsoft.Web/locations/', parameters('LogALocation'), '/managedApis/azuremonitorlogs')]"
+              },
+              "azurevm": {
+                "connectionId": "[variables('VMAPI')]",
+                "connectionName": "azurevm",
+                "id": "[concat('/subscriptions/', parameters('SubscriptionID'), '/providers/Microsoft.Web/locations/', parameters('LogALocation'), '/managedApis/azurevm')]"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

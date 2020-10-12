@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SubscriptionID": {
+      "value": "4c0c58b1-1383-417d-91f5-bf6fad54271e"
+    },
+    "LogARG": {
+      "value": "RG-SHR-MON-PRD-SE"
+    },
+    "LogAName": {
+      "value": "log-shr-mon-prd-se"
+    },
+    "workflows_OnDemondStart_WVD_name": {
+      "value": "TST_LogicApp"
+    },
+    "LogALocation": {
+      "value": "australiasoutheast"
+    }
+  }
+}
