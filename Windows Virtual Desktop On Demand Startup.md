@@ -15,11 +15,11 @@ WVD Diagnostic logs shipping to Log Analytics
 WVD workload Perf logs shipping to Log Analytics
 
 
-## Define the scheduled of Logical Apps to run
+## Define the scheduler of Logical App to run
 Alternatively, the trigger can be a Webhook request or from Azure Monitor Alter. However, it is found that there is a noticeable delay when triggered from Alert. 
 
-## Query WVD for session host availability error
-This is the sample code for querying user connection attempt (5 minutes ago) and the last WVD they connected. (We filter computer name with ‘wvd’, it can be changed base on resource group)
+## Query WVD for session host availability
+This is the sample code for querying user connection attempt (5 minutes ago) and the last WVD they connected. (We filter computer name with ‘wvd’, it can be changed based on resource group)
 
 *KQL Query*
 ```
@@ -43,6 +43,11 @@ WVDErrors
 ```
 
 ## Logic App Action
-
+Here is the work flow of Logic App, the sample deployment is scheduled to run every 5 minutes in weekend.
 
 <img src="https://github.com/azurehly/WVD-OnDemandStartUp/blob/main/wvdondemand-flow.png"/>
+
+
+## Click on button to deploy
+
+<img src="https://aka.ms/deploytoazurebutton"/>
