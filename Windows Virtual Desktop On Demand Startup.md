@@ -48,6 +48,6 @@ Here is the work flow of Logic App, the sample deployment is scheduled to run ev
 <img src="https://github.com/azurehly/WVD-OnDemandStartUp/blob/main/wvdondemand-flow.png"/>
 
 
-## Click on button to deploy
+## Deployment
 
-<img src="https://aka.ms/deploytoazurebutton"/>
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fazurehly%2FWVD-OnDemandStartUp%2Fblob%2Fmain%2Fwvdondemand.json)
