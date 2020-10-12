@@ -44,3 +44,5 @@ WVDErrors
 
 ## Logic App Action
 
+
+<img src="https://github.com/azurehly/WVD-OnDemandStartUp/blob/main/wvdondemand-flow.png"/>
