@@ -9,7 +9,9 @@ During off-hours user attempt to connect to WVD VMs, the connection will failure
 
 Here's a solution to that appears to work:
 ## Prerequisites
+
 WVD Diagnostic logs shipping to Log Analytics
+
 WVD workload Perf logs shipping to Log Analytics
 
 
