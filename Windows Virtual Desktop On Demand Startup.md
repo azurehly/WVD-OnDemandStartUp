@@ -41,3 +41,6 @@ WVDErrors
 | extend ResourceGroup = tostring(CsvField[4])
 | project VMList, ResourceGroup, User
 ```
+
+## Logic App Action
+
