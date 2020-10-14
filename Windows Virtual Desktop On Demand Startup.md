@@ -43,7 +43,7 @@ WVDErrors
 ```
 
 ## Logic App Action
-Here is the work flow of Logic App, the sample deployment is scheduled to run every 5 minutes in weekend.
+Here is the work flow of Logic App, the sample deployment is scheduled to run every 1 minute.
 
 <img src="https://github.com/azurehly/WVD-OnDemandStartUp/blob/main/wvdondemand-flow.png"/>
 
